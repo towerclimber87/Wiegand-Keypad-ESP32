@@ -1,0 +1,170 @@
+esphome:
+
+  name: $esphome_name
+  platform: ESP32
+  board: esp-wrover-kit
+
+
+ethernet:
+  type: LAN8720
+  mdc_pin: GPIO23
+  mdio_pin: GPIO18
+  clk_mode: GPIO0_IN
+  phy_addr: 1
+  power_pin: GPIO16
+
+
+substitutions:
+  $esphome_name: "keypad-frontdoor"
+  $keypad_name: "Keypad Front Door" 
+  $relay_time_out: "5s"   #Time to close Relay After Opening
+  $relay_inverted_state: "false"   #Relay inverted state 
+  $relay_pin: "12"  # Pin that the relay is connected to
+  $apipassword: "Your Password" # API Password  
+  $alarm_name: "alarm_control_panel.alarmo"  
+  $alarmcode: "Your Code"     
+  <<: !include secrets.yaml   #Needed, do not remove line.   
+
+
+api:
+  password: $apipassword
+logger:
+
+ota:
+  safe_mode: false
+
+external_components:
+  - source:
+      type: git
+      url: https://github.com/ssieb/custom_components
+    components: wiegand
+    refresh: 1min
+  - source:
+      type: git
+      url: https://github.com/ssieb/custom_components
+    components: key_provider
+    refresh: 1min    
+  - source:
+      type: git
+      url: https://github.com/ssieb/custom_components
+    components: input_builder
+    refresh: 1min        
+
+
+wiegand:
+  - id: reader
+    d0: 15
+    d1: 14
+    on_tag:
+            - if:
+                condition:
+                    - lambda: 'return x == "$admin_tag_1_1" || x == "$admin_tag_1_2" || x == "$admin_code_1";'
+                then:  
+                    - homeassistant.tag_scanned: ${user_name_1a}  $keypad_name  Tag   
+                    - switch.turn_on: all_trigger
+            - if:
+                condition:
+                    - lambda: 'return x == "$admin_tag_2_1" ||  x == "$admin_code_2";'
+                then:
+                    - homeassistant.tag_scanned: ${user_name_2a}  $keypad_name  Tag  
+                    - switch.turn_on: all_trigger
+            - if:
+                condition:
+                    - lambda: 'return x == "$admin_tag_3_1" || x == "$admin_code_3";' 
+                then:
+                    - homeassistant.tag_scanned: ${user_name_3a}  $keypad_name  Tag 
+                    - switch.turn_on: all_trigger
+            - if:
+                condition:
+                    - lambda: 'return x == "$admin_tag_4_1" || x == "$admin_code_4";'                      
+                then:
+                    - homeassistant.tag_scanned: ${user_name_4a}  $keypad_name  Tag 
+                    - switch.turn_on: all_trigger     
+            - lambda: ESP_LOGD("TEST", "received tag %s", x.c_str());
+    on_key:
+            - lambda: ESP_LOGD("TEST", "received key %d", x);
+
+input_builder:
+  - id: pin_reader
+    source_id: reader
+    min_length: 4
+    max_length: 4
+    end_keys: "#"
+    end_key_required: false   # default is false
+    back_keys: "*"
+    clear_keys: "C"
+    timeout: 2s
+    allowed_keys: "0123456789"  # if not included, then any otherwise unused keys will be allowed
+    # on_progress:
+    #   - logger.log: 
+    #       format: "input progress: '%s'"
+    #       args: [ 'x.c_str()' ]
+    on_result:
+            - logger.log: 
+                format: "input result: '%s'"
+                args: [ 'x.c_str()' ]
+            - if:
+                condition:
+                    - lambda: 'return x == "$admin_tag_1_1" || x == "$admin_tag_1_2" || x == "$admin_code_1";'
+                then:  
+                    - homeassistant.tag_scanned: ${user_name_1a}  $keypad_name  Tag   
+                    - switch.turn_on: all_trigger
+            - if:
+                condition:
+                    - lambda: 'return x == "$admin_tag_2_1" ||  x == "$admin_code_2";'
+                then:
+                    - homeassistant.tag_scanned: ${user_name_2a}  $keypad_name  Tag  
+                    - switch.turn_on: all_trigger
+            - if:
+                condition:
+                    - lambda: 'return x == "$admin_tag_3_1" || x == "$admin_code_3";' 
+                then:
+                    - homeassistant.tag_scanned: ${user_name_3a}  $keypad_name  Tag 
+                    - switch.turn_on: all_trigger
+            - if:
+                condition:
+                    - lambda: 'return x == "$admin_tag_4_1" || x == "$admin_code_4";'                      
+                then:
+                    - homeassistant.tag_scanned: ${user_name_4a}  $keypad_name  Tag 
+                    - switch.turn_on: all_trigger      
+            - if:
+                condition:
+                    - lambda: 'return x == "1234";'                      
+                then:
+                    - homeassistant.service:
+                        service: alarmo.arm
+                        data_template:
+                            entity_id: $alarm_name
+                            skip_delay: "true"                             
+# ########################################################################
+              
+binary_sensor:
+- platform: status
+  name: $keypad_name
+
+
+switch:    
+- platform: gpio
+  id: door_trigger
+  pin: $relay_pin
+  inverted: $relay_inverted_state
+  name: ${keypad_name} Door Release  
+  
+- platform: template
+  id: all_trigger
+  optimistic: true   
+  on_turn_on:
+    - then:
+           - homeassistant.service:
+                service: alarmo.disarm
+                data_template:
+                    entity_id: $alarm_name
+                    code: "$alarmcode"    
+           - switch.turn_on: door_trigger
+           - delay: $relay_time_out
+           - switch.turn_off: door_trigger           
+           - switch.turn_off: all_trigger
+
+
+ 
+# ########################################################################
