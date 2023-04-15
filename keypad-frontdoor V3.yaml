@@ -1,0 +1,1868 @@
+esphome: 
+  name: $esphome_name
+  platform: ESP32
+  board: esp-wrover-kit
+  on_boot:
+    then:
+       - script.execute: send_on_startup 
+       - delay: 2s
+       - if:
+           condition:
+              - switch.is_off: door_trigger
+           then: 
+              - lock.lock: locklock   
+       - if:
+           condition:
+              - switch.is_on: door_trigger
+           then: 
+              - lock.unlock: locklock   
+ethernet:
+  type: LAN8720
+  mdc_pin: GPIO23
+  mdio_pin: GPIO18
+  clk_mode: GPIO0_IN
+  phy_addr: 1
+  power_pin: GPIO16
+
+
+
+substitutions:
+  $esphome_name: "keypad-frontdoor"
+  $keypad_name: "Keypad Front Door" 
+  $relay_inverted_state: "false"   #Relay inverted state 
+  $relay_pin: "12"  # Pin that the relay is connected to
+  $apipassword: "Test123456" # API Password  
+  $alarm_name: "alarm_control_panel.alarmo"  
+  $alarmcode: "1234"        
+  $pin_0: "15"  
+  $pin_1: "14"     
+
+
+web_server:
+  port: 80
+  auth:
+    username: keypad
+    password: admin1234  
+
+api:
+  encryption:
+    key: "4svUNe9xyn4tpTXg1/68nIHgW+5z1Lwr1oMuEpx+GRI="
+  reboot_timeout: 0s  
+  
+logger:     
+  
+ota:
+  safe_mode: false
+
+
+select:
+  - platform: template
+    name: "(Config) Code Set"
+    id: code_set
+    optimistic: true
+    initial_option: "Select User"
+    options:
+      - Select User
+      - Admin Code
+      - Admin Tag A 
+      - Admin Tag B 
+      - Admin Tag C 
+      - Admin Tag D 
+      - ----------
+      - User 1 Code
+      - User 1 Tag
+      - ----------      
+      - User 2 Code
+      - User 2 Tag
+      - ----------          
+      - User 3 Code
+      - User 3 Tag
+      - ----------                  
+      - User 4 Code
+      - User 4 Tag
+      - ----------          
+      - User 5 Code
+      - User 5 Tag
+      - ----------      
+      - User 6 Code
+      - User 6 Tag
+      - ----------        
+      - User 7 Code
+      - User 7 Tag
+      - ----------            
+      - User 8 Code
+      - User 8 Tag
+      - ----------            
+      - User 9 Code
+      - User 9 Tag     
+      - ----------       
+      - User 10 Code
+      - User 10 Tag    
+      - ----------        
+      - User 11 Code
+      - User 11 Tag
+      - ----------            
+      - User 12 Code  
+      - User 12 Tag                                       
+      
+  - platform: template
+    name: "$keypad_name User Access (3-12)"
+    id: user_access
+    optimistic: true
+    initial_option: "Access"
+    options:
+      - Access
+      - Disabled
+sensor:
+  - platform: template
+    name: "Relay Timeout"
+    accuracy_decimals: 2
+    update_interval: never        
+    id: relay
+  - platform: template
+    accuracy_decimals: 2
+    update_interval: never    
+    id: relay_b
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: relayg
+                value: !lambda 'return id(relay).state;'
+            - sensor.template.publish:
+                id: relay
+                state: !lambda 'return id(relay_b).state;' 
+
+
+  - platform: template
+    name: "User 7 Code"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: kid_1_code
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never    
+    id: kid_1_s
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: kid_1_g
+                value: !lambda 'return id(kid_1_code).state;'
+            - sensor.template.publish:
+                id: kid_1_s 
+                state: !lambda 'return id(kid_1_code).state;' 
+  - platform: template
+    name: "User 8 Code"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: kid_2_code
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never        
+    id: kid_2_s
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: kid_2_g
+                value: !lambda 'return id(kid_2_code).state;'
+            - sensor.template.publish:
+                id: kid_2_s 
+                state: !lambda 'return id(kid_2_code).state;' 
+  - platform: template
+    name: "User 9 Code"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: kid_3_code
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never        
+    id: kid_3_s
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: kid_3_g
+                value: !lambda 'return id(kid_3_code).state;'
+            - sensor.template.publish:
+                id: kid_3_s 
+                state: !lambda 'return id(kid_3_code).state;' 
+  - platform: template
+    name: "User 10 Code"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: kid_4_code
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never        
+    id: kid_4_s
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: kid_4_g
+                value: !lambda 'return id(kid_4_code).state;'
+            - sensor.template.publish:
+                id: kid_4_s 
+                state: !lambda 'return id(kid_4_code).state;' 
+  - platform: template
+    name: "User 11 Code"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: kid_5_code
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never        
+    id: kid_5_s
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: kid_5_g
+                value: !lambda 'return id(kid_5_code).state;'
+            - sensor.template.publish:
+                id: kid_5_s 
+                state: !lambda 'return id(kid_5_code).state;'   
+  - platform: template
+    name: "User 12 Code"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: kid_6_code
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never        
+    id: kid_6_s
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: kid_6_g
+                value: !lambda 'return id(kid_6_code).state;'
+            - sensor.template.publish:
+                id: kid_6_s 
+                state: !lambda 'return id(kid_6_code).state;' 
+  - platform: template
+    name: "User 7 Tag"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: kid_1_code_tag 
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never        
+    id: kid_1_s_tag
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: kid_1_g_tag
+                value: !lambda 'return id(kid_1_code_tag).state;'
+            - sensor.template.publish:
+                id: kid_1_s_tag 
+                state: !lambda 'return id(kid_1_code_tag).state;' 
+  - platform: template
+    name: "User 8 Tag"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: kid_2_code_tag 
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never        
+    id: kid_2_s_tag
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: kid_2_g_tag
+                value: !lambda 'return id(kid_2_code_tag).state;'
+            - sensor.template.publish:
+                id: kid_2_s_tag 
+                state: !lambda 'return id(kid_2_code_tag).state;'  
+  - platform: template
+    name: "User 9 Tag"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: kid_3_code_tag   
+  - platform: template
+    update_interval: never      
+    accuracy_decimals: 0
+    id: kid_3_s_tag 
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: kid_3_g_tag
+                value: !lambda 'return id(kid_3_code_tag).state;'
+            - sensor.template.publish:
+                id: kid_3_s_tag 
+                state: !lambda 'return id(kid_3_code_tag).state;'     
+  - platform: template
+    name: "User 10 Tag"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: kid_4_code_tag 
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never        
+    id: kid_4_s_tag
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: kid_4_g_tag
+                value: !lambda 'return id(kid_4_code_tag).state;'
+            - sensor.template.publish:
+                id: kid_4_s_tag 
+                state: !lambda 'return id(kid_4_code_tag).state;' 
+  - platform: template
+    name: "User 11 Tag"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: kid_5_code_tag
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never        
+    id: kid_5_s_tag 
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: kid_5_g_tag
+                value: !lambda 'return id(kid_5_code_tag).state;'
+            - sensor.template.publish:
+                id: kid_5_s_tag 
+                state: !lambda 'return id(kid_5_code_tag).state;'
+  - platform: template
+    name: "User 12 Tag"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: kid_6_code_tag 
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never        
+    id: kid_6_s_tag 
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: kid_6_g_tag
+                value: !lambda 'return id(kid_6_code_tag).state;'
+            - sensor.template.publish:
+                id: kid_6_s_tag 
+                state: !lambda 'return id(kid_6_code_tag).state;'
+  - platform: template
+    name: "Admin Code"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: admin_code_s
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never        
+    id: admin_code 
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: admin_code_g
+                value: !lambda 'return id(admin_code).state;'
+            - sensor.template.publish:
+                id: admin_code_s 
+                state: !lambda 'return id(admin_code).state;'  
+  - platform: template
+    name: "User 1 Code"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: user_code_1_s 
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never        
+    id: user_one 
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: user_one_g
+                value: !lambda 'return id(user_one).state;'   
+            - sensor.template.publish:
+                id: user_code_1_s 
+                state: !lambda 'return id(user_one).state;'        
+  - platform: template
+    name: "User 2 Code"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: user_code_2_s
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never        
+    id: user_two 
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: user_two_g
+                value: !lambda 'return id(user_two).state;'    
+            - sensor.template.publish:
+                id: user_code_2_s 
+                state: !lambda 'return id(user_two).state;' 
+  - platform: template
+    name: "User 3 Code"
+    update_interval: never        
+    accuracy_decimals: 0
+    id: user_code_3_s 
+  - platform: template
+    update_interval: never      
+    accuracy_decimals: 0
+    id: user_three 
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: user_three_g
+                value: !lambda 'return id(user_three).state;'    
+            - sensor.template.publish:
+                id: user_code_3_s 
+                state: !lambda 'return id(user_three).state;'
+  - platform: template
+    name: "User 4 Code"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: user_code_4_s 
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never        
+    id: user_four 
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: user_four_g
+                value: !lambda 'return id(user_four).state;'  
+            - sensor.template.publish:
+                id: user_code_4_s 
+                state: !lambda 'return id(user_four).state;'
+  - platform: template
+    name: "User 5 Code"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: user_code_5_s 
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never        
+    id: user_five 
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: user_five_g
+                value: !lambda 'return id(user_five).state;'  
+            - sensor.template.publish:
+                id: user_code_5_s 
+                state: !lambda 'return id(user_five).state;'  
+  - platform: template
+    name: "User 6 Code"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: user_code_6_s 
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never        
+    id: user_six 
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: user_six_g
+                value: !lambda 'return id(user_six).state;'    
+            - sensor.template.publish:
+                id: user_code_6_s 
+                state: !lambda 'return id(user_six).state;' 
+  - platform: template
+    name: "Admin Tag A"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: admin_tag_a_s 
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never        
+    id: admin_tag_a 
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: admin_tag_a_g
+                value: !lambda 'return id(admin_tag_a).state;'
+            - sensor.template.publish:
+                id: admin_tag_a_s 
+                state: !lambda 'return id(admin_tag_a).state;'    
+  - platform: template
+    name: "Admin Tag B"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: admin_tag_b_s 
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never    
+    id: admin_tag_b 
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: admin_tag_b_g
+                value: !lambda 'return id(admin_tag_b).state;'  
+            - sensor.template.publish:
+                id: admin_tag_b_s 
+                state: !lambda 'return id(admin_tag_b).state;' 
+  - platform: template
+    name: "Admin Tag C"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: admin_tag_c_s 
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never        
+    id: admin_tag_c 
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: admin_tag_c_g
+                value: !lambda 'return id(admin_tag_c).state;'    
+            - sensor.template.publish:
+                id: admin_tag_c_s 
+                state: !lambda 'return id(admin_tag_c).state;' 
+  - platform: template
+    name: "Admin Tag D"
+    update_interval: never        
+    accuracy_decimals: 0
+    id: admin_tag_d_s 
+  - platform: template
+    update_interval: never      
+    accuracy_decimals: 0
+    id: admin_tag_d 
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: admin_tag_d_g
+                value: !lambda 'return id(admin_tag_d).state;'  
+            - sensor.template.publish:
+                id: admin_tag_d_s 
+                state: !lambda 'return id(admin_tag_d).state;' 
+  - platform: template
+    name: "User 1 Tag"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: user_tag_1_s
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never        
+    id: user_tag_1 
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: user_1_tag
+                value: !lambda 'return id(user_tag_1).state;'   
+            - sensor.template.publish:
+                id: user_tag_1_s 
+                state: !lambda 'return id(user_tag_1).state;' 
+  - platform: template
+    name: "User 2 Tag"
+    update_interval: never        
+    accuracy_decimals: 0
+    id: user_tag_2_s
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never        
+    id: user_tag_2 
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: user_2_tag
+                value: !lambda 'return id(user_tag_2).state;'    
+            - sensor.template.publish:
+                id: user_tag_2_s 
+                state: !lambda 'return id(user_tag_2).state;'   
+  - platform: template
+    name: "User 3 Tag"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: user_tag_3_s 
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never        
+    id: user_tag_3 
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: user_3_tag
+                value: !lambda 'return id(user_tag_3).state;' 
+            - sensor.template.publish:
+                id: user_tag_3_s 
+                state: !lambda 'return id(user_tag_3).state;'   
+  - platform: template
+    name: "User 4 Tag"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: user_tag_4_s 
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never        
+    id: user_tag_4 
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: user_4_tag
+                value: !lambda 'return id(user_tag_4).state;'    
+            - sensor.template.publish:
+                id: user_tag_4_s 
+                state: !lambda 'return id(user_tag_4).state;'     
+  - platform: template
+    name: "User 5 Tag"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: user_tag_5_s 
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never        
+    id: user_tag_5 
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: user_5_tag
+                value: !lambda 'return id(user_tag_5).state;'                                                             
+            - sensor.template.publish:
+                id: user_tag_5_s 
+                state: !lambda 'return id(user_tag_5).state;'
+  - platform: template
+    name: "User 6 Tag"
+    accuracy_decimals: 0
+    update_interval: never        
+    id: user_tag_6_s 
+  - platform: template
+    accuracy_decimals: 0
+    update_interval: never        
+    id: user_tag_6 
+    on_value:
+      - if:
+          condition:
+            - for:
+               time: 1min
+               condition:
+                 binary_sensor.is_on: keypad_status              
+          then:       
+            - globals.set:
+                id: user_6_tag
+                value: !lambda 'return id(user_tag_6).state;'                  
+            - sensor.template.publish:
+                id: user_tag_6_s 
+                state: !lambda 'return id(user_tag_6).state;' 
+  - platform: template
+    id: Keypad_code
+    update_interval: never        
+    accuracy_decimals: 0
+    on_value:
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_code).state == id(kid_1_code).state;'
+                    - lambda: 'return id(user_access).state == "Access";' 
+                then:  
+                    - homeassistant.tag_scanned: User 7  $keypad_name
+                    - switch.turn_on: all_trigger
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_code).state == id(kid_2_code).state;'
+                    - lambda: 'return id(user_access).state == "Access";'                     
+                then:  
+                    - homeassistant.tag_scanned: User 8  $keypad_name
+                    - switch.turn_on: all_trigger
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_code).state == id(kid_3_code).state;'
+                    - lambda: 'return id(user_access).state == "Access";'                     
+                then:  
+                    - homeassistant.tag_scanned: User 9  $keypad_name
+                    - switch.turn_on: all_trigger
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_code).state == id(kid_4_code).state;'                
+                    - lambda: 'return id(user_access).state == "Access";' 
+
+                then:  
+                    - homeassistant.tag_scanned: User 10  $keypad_name
+                    - switch.turn_on: all_trigger
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_code).state == id(kid_5_code).state;'
+                    - lambda: 'return id(user_access).state == "Access";'                     
+                then:  
+                    - homeassistant.tag_scanned: User 11  $keypad_name
+                    - switch.turn_on: all_trigger
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_code).state == id(kid_6_code).state;'
+                    - lambda: 'return id(user_access).state == "Access";'                     
+                then:  
+                    - homeassistant.tag_scanned: User 12  $keypad_name
+                    - switch.turn_on: all_trigger                    
+            - if:                            
+                condition:
+                    - lambda: 'return id(Keypad_code).state == id(admin_code).state;'
+                then:  
+                    - homeassistant.tag_scanned: Admin  $keypad_name
+                    - switch.turn_on: all_trigger
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_code).state == id(user_one).state;'                    
+                then:  
+                    - homeassistant.tag_scanned: User 1  $keypad_name
+                    - switch.turn_on: all_trigger 
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_code).state == id(user_two).state;'                     
+                then:  
+                    - homeassistant.tag_scanned: User 2  $keypad_name
+                    - switch.turn_on: all_trigger                                        
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_code).state == id(user_three).state;'    
+                    - lambda: 'return id(user_access).state == "Access";'                                      
+                then:  
+                    - homeassistant.tag_scanned: User 3  $keypad_name
+                    - switch.turn_on: all_trigger 
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_code).state == id(user_four).state;'     
+                    - lambda: 'return id(user_access).state == "Access";'                                     
+                then:  
+                    - homeassistant.tag_scanned: User 4  $keypad_name
+                    - switch.turn_on: all_trigger 
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_code).state == id(user_five).state;'    
+                    - lambda: 'return id(user_access).state == "Access";'                                      
+                then:  
+                    - homeassistant.tag_scanned: User 5  $keypad_name
+                    - switch.turn_on: all_trigger                                        
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_code).state == id(user_six).state;'     
+                    - lambda: 'return id(user_access).state == "Access";'                                     
+                then:  
+                    - homeassistant.tag_scanned: User 6  $keypad_name
+                    - switch.turn_on: all_trigger                                                            
+  - platform: template
+    id: Keypad_tag
+    accuracy_decimals: 0
+    update_interval: never        
+    on_value:               
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_tag).state == id(admin_tag_a).state;'                     
+                then:  
+                    - homeassistant.tag_scanned: Admin $keypad_name
+                    - switch.turn_on: all_trigger
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_tag).state == id(admin_tag_b).state;'                     
+                then:  
+                    - homeassistant.tag_scanned: Admin $keypad_name
+                    - switch.turn_on: all_trigger         
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_tag).state == id(admin_tag_c).state;'                     
+                then:  
+                    - homeassistant.tag_scanned: Admin $keypad_name
+                    - switch.turn_on: all_trigger
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_tag).state == id(admin_tag_d).state;'                     
+                then:  
+                    - homeassistant.tag_scanned: Admin $keypad_name
+                    - switch.turn_on: all_trigger                                
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_tag).state == id(user_tag_1).state;'                     
+                then:  
+                    - homeassistant.tag_scanned: User 1  $keypad_name
+                    - switch.turn_on: all_trigger 
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_tag).state == id(user_tag_2).state;'                     
+                then:  
+                    - homeassistant.tag_scanned: User 2  $keypad_name
+                    - switch.turn_on: all_trigger                                        
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_tag).state == id(user_tag_3).state;'     
+                    - lambda: 'return id(user_access).state == "Access";'                                    
+                then:  
+                    - homeassistant.tag_scanned: User 3  $keypad_name
+                    - switch.turn_on: all_trigger 
+            - if:
+                condition:
+
+                    - lambda: 'return id(Keypad_tag).state == id(user_tag_4).state;'  
+                    - lambda: 'return id(user_access).state == "Access";'                                          
+                then:  
+                    - homeassistant.tag_scanned: User 4  $keypad_name
+                    - switch.turn_on: all_trigger 
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_tag).state == id(user_tag_5).state;'                       
+                    - lambda: 'return id(user_access).state == "Access";'      
+
+                then:  
+                    - homeassistant.tag_scanned: User 5  $keypad_name
+                    - switch.turn_on: all_trigger                                        
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_tag).state == id(user_tag_6).state;'      
+                    - lambda: 'return id(user_access).state == "Access";'                                      
+                then:  
+                    - homeassistant.tag_scanned: User 6  $keypad_name
+                    - switch.turn_on: all_trigger     
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_tag).state == id(kid_1_code_tag).state;'
+                    - lambda: 'return id(user_access).state == "Access";'                       
+                then:  
+                    - homeassistant.tag_scanned: User 7  $keypad_name
+                    - switch.turn_on: all_trigger 
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_tag).state == id(kid_2_code_tag).state;'
+                    - lambda: 'return id(user_access).state == "Access";'                       
+                then:  
+                    - homeassistant.tag_scanned: User 8  $keypad_name
+                    - switch.turn_on: all_trigger      
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_tag).state == id(kid_3_code_tag).state;'
+                    - lambda: 'return id(user_access).state == "Access";'                       
+                then:  
+                    - homeassistant.tag_scanned: User 9  $keypad_name
+                    - switch.turn_on: all_trigger     
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_tag).state == id(kid_4_code_tag).state;'
+                    - lambda: 'return id(user_access).state == "Access";'                       
+                then:  
+                    - homeassistant.tag_scanned: User 10  $keypad_name
+                    - switch.turn_on: all_trigger 
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_tag).state == id(kid_5_code_tag).state;'
+                    - lambda: 'return id(user_access).state == "Access";'                       
+                then:  
+                    - homeassistant.tag_scanned: User 11  $keypad_name
+                    - switch.turn_on: all_trigger      
+            - if:
+                condition:
+                    - lambda: 'return id(Keypad_tag).state == id(kid_6_code_tag).state;'
+                    - lambda: 'return id(user_access).state == "Access";'                       
+                then:  
+                    - homeassistant.tag_scanned: User 12  $keypad_name
+                    - switch.turn_on: all_trigger                                                                                                            
+button:
+  - platform: template
+    name: Zero Code
+    on_press:
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "Admin Code";' 
+          then:  
+            - sensor.template.publish:
+                id: admin_code
+                state: "0"  
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 1 Code";' 
+          then:  
+            - sensor.template.publish:
+                id: user_one
+                state: "0"  
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 2 Code";' 
+          then: 
+            - sensor.template.publish:            
+                id: user_two
+                state: "0"  
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 3 Code";' 
+          then:  
+            - sensor.template.publish:
+                id: user_three
+                state: "0"   
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 4 Code";' 
+          then:  
+            - sensor.template.publish:
+                id: user_four
+                state: "0"  
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 5 Code";' 
+          then:  
+            - sensor.template.publish:
+                id: user_five
+                state: "0"    
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 6 Code";' 
+          then:  
+            - sensor.template.publish:
+                id: user_six
+                state: "0"  
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "Admin Tag A";' 
+          then:  
+            - sensor.template.publish:
+                id: admin_tag_a  
+                state: "0"  
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "Admin Tag B";' 
+          then:  
+            - sensor.template.publish:
+                id: admin_tag_b 
+                state: "0"   
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "Admin Tag C";' 
+          then:  
+            - sensor.template.publish:
+                id: admin_tag_c  
+                state: "0"  
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "Admin Tag D";' 
+          then:  
+            - sensor.template.publish:
+                id: admin_tag_d
+                state: "0"  
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 1 Tag";' 
+          then:  
+            - sensor.template.publish:
+                id: user_tag_1
+                state: "0"  
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 2 Tag";' 
+          then:  
+            - sensor.template.publish:
+                id: user_tag_2
+                state: "0"     
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 3 Tag";' 
+          then:  
+            - sensor.template.publish:
+                id: user_tag_3
+                state: "0"  
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 4 Tag";' 
+          then:  
+            - sensor.template.publish:
+                id: user_tag_4
+                state: "0"                                                                                                        
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 5 Tag";' 
+          then:  
+             - sensor.template.publish:
+                id: user_tag_5
+                state: "0"  
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 6 Tag";' 
+          then:  
+            - sensor.template.publish:
+                id: user_tag_6
+                state: "0"  
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 7 Code";' 
+          then:  
+            - sensor.template.publish:
+                id: kid_1_code
+                state: "0"   
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 8 Code";' 
+          then:  
+            - sensor.template.publish:
+                id: kid_2_code
+                state: "0"   
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 9 Code";' 
+          then:  
+            - sensor.template.publish:
+                id: kid_3_code
+                state: "0"  
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 10 Code";' 
+          then:  
+            - sensor.template.publish:
+                id: kid_4_code
+                state: "0"   
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 11 Code";' 
+          then:  
+            - sensor.template.publish:
+                id: kid_5_code
+                state: "0"        
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 12 Code";' 
+          then:  
+            - sensor.template.publish:
+                id: kid_6_code
+                state: "0"                               
+number:
+  - platform: template
+    name: Relay Timeout
+    id: relay_time_out
+    optimistic: true
+    min_value: .01   
+    max_value: 10
+    step: .05
+    on_value:
+          then:  
+            - sensor.template.publish:
+                id: relay_b
+                state: !lambda "return id(relay_time_out).state;"  
+  - platform: template
+    name: (Config) Code Set (Code)
+    id: code_entry
+    optimistic: true
+    min_value: 999   
+    max_value: 9999
+    step: 1    
+    on_value:
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "Admin Code";' 
+          then:  
+            - sensor.template.publish:
+                id: admin_code
+                state: !lambda "return id(code_entry).state;"  
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 1 Code";' 
+          then:  
+            - sensor.template.publish:
+                id: user_one
+                state: !lambda "return id(code_entry).state;"     
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 2 Code";' 
+          then: 
+            - sensor.template.publish:            
+                id: user_two
+                state: !lambda "return id(code_entry).state;"   
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 3 Code";' 
+          then:  
+            - sensor.template.publish:
+                id: user_three
+                state: !lambda "return id(code_entry).state;"    
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 4 Code";' 
+          then:  
+            - sensor.template.publish:
+                id: user_four
+                state: !lambda "return id(code_entry).state;" 
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 5 Code";' 
+          then:  
+            - sensor.template.publish:
+                id: user_five
+                state: !lambda "return id(code_entry).state;"     
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 6 Code";' 
+          then:  
+            - sensor.template.publish:
+                id: user_six
+                state: !lambda "return id(code_entry).state;"  
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "Admin Tag A";' 
+          then:  
+            - sensor.template.publish:
+                id: admin_tag_a  
+                state: !lambda "return id(code_entry).state;"  
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "Admin Tag B";' 
+          then:  
+            - sensor.template.publish:
+                id: admin_tag_b 
+                state: !lambda "return id(code_entry).state;"  
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "Admin Tag C";' 
+          then:  
+            - sensor.template.publish:
+                id: admin_tag_c  
+                state: !lambda "return id(code_entry).state;"  
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "Admin Tag D";' 
+          then:  
+            - sensor.template.publish:
+                id: admin_tag_d
+                state: !lambda "return id(code_entry).state;" 
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 1 Tag";' 
+          then:  
+            - sensor.template.publish:
+                id: user_tag_1
+                state: !lambda "return id(code_entry).state;" 
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 2 Tag";' 
+          then:  
+            - sensor.template.publish:
+                id: user_tag_2
+                state: !lambda "return id(code_entry).state;"     
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 3 Tag";' 
+          then:  
+            - sensor.template.publish:
+                id: user_tag_3
+                state: !lambda "return id(code_entry).state;" 
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 4 Tag";' 
+          then:  
+            - sensor.template.publish:
+                id: user_tag_4
+                state: !lambda "return id(code_entry).state;"                                                                                                        
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 5 Tag";' 
+          then:  
+             - sensor.template.publish:
+                id: user_tag_5
+                state: !lambda "return id(code_entry).state;" 
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 6 Tag";' 
+          then:  
+            - sensor.template.publish:
+                id: user_tag_6
+                state: !lambda "return id(code_entry).state;"     
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 7 Code";' 
+          then:  
+            - sensor.template.publish:
+                id: kid_1_code
+                state: !lambda "return id(code_entry).state;"    
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 8 Code";' 
+          then:  
+            - sensor.template.publish:
+                id: kid_2_code
+                state: !lambda "return id(code_entry).state;"   
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 9 Code";' 
+          then:  
+            - sensor.template.publish:
+                id: kid_3_code
+                state: !lambda "return id(code_entry).state;"   
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 10 Code";' 
+          then:  
+            - sensor.template.publish:
+                id: kid_4_code
+                state: !lambda "return id(code_entry).state;"   
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 11 Code";' 
+          then:  
+            - sensor.template.publish:
+                id: kid_5_code
+                state: !lambda "return id(code_entry).state;"           
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 12 Code";' 
+          then:  
+            - sensor.template.publish:
+                id: kid_6_code
+                state: !lambda "return id(code_entry).state;"                                                                                               
+      - delay: 2min
+      - select.set:
+          id: code_set
+          option: "Select User"     
+
+  - platform: template
+    name: (Config) Code Set (Tag)
+    id: tag_entry
+    optimistic: true
+    min_value: 100000
+    max_value: 999999999
+    step: 1    
+    on_value:
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "Admin Tag A";' 
+          then:  
+            - sensor.template.publish:
+                id: admin_tag_a
+                state: !lambda "return id(tag_entry).state;" 
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "Admin Tag B";' 
+          then:  
+            - sensor.template.publish:
+                id: admin_tag_b
+                state: !lambda "return id(tag_entry).state;"     
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "Admin Tag C";' 
+          then:  
+            - sensor.template.publish:
+                id: admin_tag_c
+                state: !lambda "return id(tag_entry).state;"    
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "Admin Tag D";' 
+          then:  
+            - sensor.template.publish:
+                id: admin_tag_d
+                state: !lambda "return id(tag_entry).state;"                                       
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 1 Tag";' 
+          then:  
+            - sensor.template.publish:
+                id: user_tag_1
+                state: !lambda "return id(tag_entry).state;"     
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 2 Tag";' 
+          then:  
+            - sensor.template.publish:
+                id: user_tag_2
+                state: !lambda "return id(tag_entry).state;"   
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 3 Tag";' 
+          then:  
+            - sensor.template.publish:
+                id: user_tag_3
+                state: !lambda "return id(tag_entry).state;"    
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 4 Tag";' 
+          then:  
+            - sensor.template.publish:
+                id: user_tag_4
+                state: !lambda "return id(tag_entry).state;"  
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 5 Tag";' 
+          then:  
+            - sensor.template.publish:
+                id: user_tag_5
+                state: !lambda "return id(tag_entry).state;"                 
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 6 Tag";' 
+          then:  
+            - sensor.template.publish:
+                id: user_tag_6
+                state: !lambda "return id(tag_entry).state;"  
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 12 Tag";' 
+          then:  
+            - sensor.template.publish:
+                id: kid_6_code_tag
+                state: !lambda "return id(tag_entry).state;"  
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 11 Tag";' 
+          then:  
+            - sensor.template.publish:
+                id: kid_5_code_tag
+                state: !lambda "return id(tag_entry).state;"    
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 10 Tag";' 
+          then:  
+            - sensor.template.publish:
+                id: kid_4_code_tag
+                state: !lambda "return id(tag_entry).state;"      
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 9 Tag";' 
+          then:  
+            - sensor.template.publish:
+                id: kid_3_code_tag
+                state: !lambda "return id(tag_entry).state;"  
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 8 Tag";' 
+          then:  
+            - sensor.template.publish:
+                id: kid_2_code_tag
+                state: !lambda "return id(tag_entry).state;"    
+      - if:
+          condition:
+            - lambda: 'return id(code_set).state == "User 7 Tag";' 
+          then:  
+            - sensor.template.publish:
+                id: kid_1_code_tag
+                state: !lambda "return id(tag_entry).state;"                                                           
+      - delay: 2min
+      - select.set:
+          id: code_set
+          option: "Select User"  
+ 
+ 
+wiegand:
+  - id: reader
+    d0: $pin_0
+    d1: $pin_1
+    on_key:
+            - lambda: ESP_LOGI("KEY", "received key %d", x);        
+    on_tag:
+            - lambda: ESP_LOGI("TAG", "received tag %s", x.c_str());
+            - sensor.template.publish:
+                id: Keypad_tag 
+                state: !lambda "return parse_number<float>(x).value();"   
+    on_raw:
+            - lambda: ESP_LOGI("RAW", "received raw %d bits, value %llx", bits, value);             
+
+
+key_collector:
+  - id: pin_reader
+    source_id: reader
+    min_length: 4
+    max_length: 4
+    end_keys: "#"
+    end_key_required: false   # default is false
+    back_keys: "*"
+    clear_keys: "*"
+    timeout: 2s
+    allowed_keys: "0123456789"  # if not included, then any otherwise unused keys will be allowed
+    on_progress:
+            - logger.log:
+                format: "input progress: '%s', started by '%c'"
+                args: [ 'x.c_str()', "(start == 0 ? '~' : start)" ]          
+    on_result:
+            - logger.log:
+                format: "input result: '%s', started by '%c', ended by '%c'"
+                args: [ 'x.c_str()', "(start == 0 ? '~' : start)", "(end == 0 ? '~' : end)" ]
+            - sensor.template.publish:
+                id: Keypad_code 
+                state: !lambda "return parse_number<float>(x).value();"       
+    on_timeout:
+            - logger.log:
+                format: "input timeout: '%s', started by '%c'"
+                args: [ 'x.c_str()', "(start == 0 ? '~' : start)" ]                
+# ########################################################################
+binary_sensor:
+- platform: status
+  id: keypad_status
+  name: $keypad_name Status
+
+lock:
+  - platform: template 
+    optimistic: true    
+    id: locklock
+    name: ${keypad_name} Lock 
+    on_lock:
+    - switch.turn_off: door_trigger
+    on_unlock:
+    - switch.turn_on: door_trigger
+
+switch: 
+- platform: restart
+  id: restartunit
+
+- platform: gpio
+  id: door_trigger
+  pin: $relay_pin
+  inverted: $relay_inverted_state  
+  
+- platform: template
+  id: all_trigger
+  optimistic: true   
+  on_turn_on:
+    - then:
+           - homeassistant.service:
+                service: alarmo.disarm
+                data_template:
+                    entity_id: $alarm_name
+                    code: "$alarmcode"    
+           - switch.turn_on: door_trigger
+           - delay: !lambda return id(relay_b).state * 1000;      
+           - switch.turn_off: door_trigger           
+           - switch.turn_off: all_trigger                                               
+# ########################################################################
+globals:
+  - id: admin_code_g
+    type: int
+    restore_value: yes
+  - id: admin_tag_a_g
+    type: int
+    restore_value: yes
+  - id: admin_tag_b_g
+    type: int
+    restore_value: yes
+  - id: admin_tag_c_g
+    type: int
+    restore_value: yes
+  - id: admin_tag_d_g
+    type: int
+    restore_value: yes
+  - id: user_one_g
+    type: int
+    restore_value: yes 
+  - id: user_two_g
+    type: int
+    restore_value: yes    
+  - id: user_three_g
+    type: int
+    restore_value: yes 
+  - id: user_four_g
+    type: int
+    restore_value: yes        
+  - id: user_five_g
+    type: int
+    restore_value: yes           
+  - id: user_six_g
+    type: int
+    restore_value: yes    
+  - id: user_1_tag
+    type: int
+    restore_value: yes
+  - id: user_2_tag
+    type: int
+    restore_value: yes
+  - id: user_3_tag
+    type: int
+    restore_value: yes 
+  - id: user_4_tag
+    type: int
+    restore_value: yes
+  - id: user_5_tag
+    type: int
+    restore_value: yes
+  - id: user_6_tag
+    type: int
+    restore_value: yes            
+  - id: user_1_name_g
+    type: int
+    restore_value: yes 
+  - id: user_2_name_g
+    type: int
+    restore_value: yes  
+  - id: user_3_name_g
+    type: int
+    restore_value: yes 
+  - id: user_4_name_g
+    type: int
+    restore_value: yes
+  - id: user_5_name_g
+    type: int
+    restore_value: yes 
+  - id: user_6_name_g
+    type: int
+    restore_value: yes 
+  - id: kid_1_g
+    type: int
+    restore_value: yes
+  - id: kid_2_g
+    type: int
+    restore_value: yes
+  - id: kid_3_g
+    type: int
+    restore_value: yes  
+  - id: kid_4_g
+    type: int
+    restore_value: yes
+  - id: kid_5_g
+    type: int
+    restore_value: yes
+  - id: kid_6_g
+    type: int
+    restore_value: yes                 
+  - id: kid_1_g_tag
+    type: int
+    restore_value: yes
+  - id: kid_2_g_tag
+    type: int
+    restore_value: yes
+  - id: kid_3_g_tag
+    type: int
+    restore_value: yes  
+  - id: kid_4_g_tag
+    type: int
+    restore_value: yes
+  - id: kid_5_g_tag
+    type: int
+    restore_value: yes
+  - id: kid_6_g_tag
+    type: int
+    restore_value: yes 
+  - id: relayg
+    type: int
+    restore_value: yes                     
+script:
+  - id: send_on_startup
+    then:          
+            - delay: 30s
+            - sensor.template.publish:
+                id: relay
+                state: !lambda "return id(relayg);" 
+            - sensor.template.publish:
+                id: admin_code
+                state: !lambda "return id(admin_code_g);" 
+            - sensor.template.publish:
+                id: admin_tag_a
+                state: !lambda "return id(admin_tag_a_g);" 
+            - sensor.template.publish:
+                id: admin_tag_b
+                state: !lambda "return id(admin_tag_b_g);" 
+            - sensor.template.publish:
+                id: admin_tag_c
+                state: !lambda "return id(admin_tag_c_g);" 
+            - sensor.template.publish:
+                id: admin_tag_d
+                state: !lambda "return id(admin_tag_d_g);" 
+            - sensor.template.publish:
+                id: user_one
+                state: !lambda "return id(user_one_g);" 
+            - sensor.template.publish:
+                id: user_two
+                state: !lambda "return id(user_two_g);"  
+            - sensor.template.publish:
+                id: user_three
+                state: !lambda "return id(user_three_g);" 
+            - sensor.template.publish:
+                id: user_four
+                state: !lambda "return id(user_four_g);" 
+            - sensor.template.publish:
+                id: user_five
+                state: !lambda "return id(user_five_g);" 
+            - sensor.template.publish:
+                id: user_six
+                state: !lambda "return id(user_six_g);"                                         
+            - sensor.template.publish:
+                id: user_tag_1
+                state: !lambda "return id(user_1_tag);" 
+            - sensor.template.publish:
+                id: user_tag_2
+                state: !lambda "return id(user_2_tag);"  
+            - sensor.template.publish:
+                id: user_tag_3
+                state: !lambda "return id(user_3_tag);"  
+            - sensor.template.publish:
+                id: user_tag_4
+                state: !lambda "return id(user_4_tag);"    
+            - sensor.template.publish:
+                id: user_tag_5
+                state: !lambda "return id(user_5_tag);"                    
+            - sensor.template.publish:        
+                id: user_tag_6
+                state: !lambda "return id(user_6_tag);" 
+            - sensor.template.publish:      
+                id: kid_1_code
+                state: !lambda "return id(kid_1_g);"                    
+            - sensor.template.publish:      
+                id: kid_2_code
+                state: !lambda "return id(kid_2_g);"  
+            - sensor.template.publish:      
+                id: kid_3_code
+                state: !lambda "return id(kid_3_g);"                                                   
+            - sensor.template.publish:   
+                id: kid_4_code
+                state: !lambda "return id(kid_4_g);"    
+            - sensor.template.publish:       
+                id: kid_5_code
+                state: !lambda "return id(kid_5_g);"  
+            - sensor.template.publish:      
+                id: kid_6_code
+                state: !lambda "return id(kid_6_g);" 
+            - sensor.template.publish: 
+                id: kid_1_code_tag
+                state: !lambda "return id(kid_1_g_tag);"
+            - sensor.template.publish:      
+                id: kid_2_code_tag
+                state: !lambda "return id(kid_2_g_tag);"
+            - sensor.template.publish:        
+                id: kid_3_code_tag
+                state: !lambda "return id(kid_3_g_tag);"  
+            - sensor.template.publish:      
+                id: kid_4_code_tag
+                state: !lambda "return id(kid_4_g_tag);"
+            - sensor.template.publish:      
+                id: kid_5_code_tag
+                state: !lambda "return id(kid_5_g_tag);"
+            - sensor.template.publish:  
+                id: kid_6_code_tag
+                state: !lambda "return id(kid_5_g_tag);"                                
+            - delay: 1s
+            - sensor.template.publish:
+                id: relay_b
+                state: !lambda 'return id(relay).state;' 
+            - sensor.template.publish:
+                id: admin_code_s 
+                state: !lambda 'return id(admin_code).state;'                                 
+            - sensor.template.publish:
+                id: user_code_1_s 
+                state: !lambda 'return id(user_one).state;'  
+            - sensor.template.publish:
+                id: user_code_2_s 
+                state: !lambda 'return id(user_two).state;'       
+            - sensor.template.publish:
+                id: user_code_3_s 
+                state: !lambda 'return id(user_three).state;'     
+            - sensor.template.publish:
+                id: user_code_4_s 
+                state: !lambda 'return id(user_four).state;'   
+            - sensor.template.publish:
+                id: user_code_5_s 
+                state: !lambda 'return id(user_five).state;'    
+            - sensor.template.publish:
+                id: user_code_6_s 
+                state: !lambda 'return id(user_six).state;'     
+            - sensor.template.publish:
+                id: admin_tag_a_s 
+                state: !lambda 'return id(admin_tag_a).state;'     
+            - sensor.template.publish:
+                id: admin_tag_b_s 
+                state: !lambda 'return id(admin_tag_b).state;' 
+            - sensor.template.publish:
+                id: admin_tag_c_s 
+                state: !lambda 'return id(admin_tag_c).state;'    
+            - sensor.template.publish:
+                id: admin_tag_d_s 
+                state: !lambda 'return id(admin_tag_d).state;' 
+            - sensor.template.publish:
+                id: user_tag_1_s 
+                state: !lambda 'return id(user_tag_1).state;'  
+            - sensor.template.publish:
+                id: user_tag_2_s 
+                state: !lambda 'return id(user_tag_2).state;'              
+            - sensor.template.publish:
+                id: user_tag_3_s 
+                state: !lambda 'return id(user_tag_3).state;'      
+            - sensor.template.publish:
+                id: user_tag_4_s 
+                state: !lambda 'return id(user_tag_4).state;'      
+            - sensor.template.publish:
+                id: user_tag_5_s 
+                state: !lambda 'return id(user_tag_5).state;'    
+            - sensor.template.publish:
+                id: user_tag_6_s 
+                state: !lambda 'return id(user_tag_6).state;'  
+            - sensor.template.publish:
+                id: kid_1_s 
+                state: !lambda 'return id(kid_1_code).state;' 
+            - sensor.template.publish:
+                id: kid_2_s 
+                state: !lambda 'return id(kid_2_code).state;' 
+            - sensor.template.publish:
+                id: kid_3_s 
+                state: !lambda 'return id(kid_3_code).state;'
+            - sensor.template.publish:
+                id: kid_4_s 
+                state: !lambda 'return id(kid_4_code).state;' 
+            - sensor.template.publish:
+                id: kid_5_s 
+                state: !lambda 'return id(kid_5_code).state;' 
+            - sensor.template.publish:
+                id: kid_6_s 
+                state: !lambda 'return id(kid_6_code).state;' 
+            - sensor.template.publish:
+                id: kid_1_s_tag 
+                state: !lambda 'return id(kid_1_code_tag).state;'     
+            - sensor.template.publish:
+                id: kid_2_s_tag 
+                state: !lambda 'return id(kid_2_code_tag).state;'     
+            - sensor.template.publish:
+                id: kid_3_s_tag 
+                state: !lambda 'return id(kid_3_code_tag).state;' 
+            - sensor.template.publish:
+                id: kid_4_s_tag 
+                state: !lambda 'return id(kid_4_code_tag).state;'     
+            - sensor.template.publish:
+                id: kid_5_s_tag 
+                state: !lambda 'return id(kid_5_code_tag).state;'     
+            - sensor.template.publish:
+                id: kid_6_s_tag 
+                state: !lambda 'return id(kid_6_code_tag).state;'                     
